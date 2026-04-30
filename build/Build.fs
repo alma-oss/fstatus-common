@@ -2,8 +2,10 @@
 // === F# / Project fake build ==================================================================== 1.6.0 =
 // --------------------------------------------------------------------------------------------------------
 // Options:
-//  - no-clean   - disables clean of dirs in the first step (required on CI)
-//  - no-lint    - lint will be executed, but the result is not validated
+//  - no-clean      - disables clean of dirs in the first step (required on CI)
+//  - no-lint       - lint will be executed, but the result is not validated
+//  - no-codestyle  - skips formatting validation
+//  - no-analyze    - skips code analysis (lint and codestyle)
 // ========================================================================================================
 
 open Fake.Core
