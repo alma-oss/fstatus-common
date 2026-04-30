@@ -19,7 +19,7 @@ let main args =
 
     Targets.init {
         Project = {
-            Name = "Alma.Status.Common"
+            Name = "Alma.Fable.Status.Common"
             Summary = "Shared DTOs and utility functions for fstatus client and server applications."
             Git = Git.init ()
         }
