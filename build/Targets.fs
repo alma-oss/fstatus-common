@@ -48,6 +48,28 @@ module internal Targets =
                 ]
                 |> runParallel)
 
+            Target.create "RunMirrord" (fun _ ->
+                run dotnet [ "build" ] safe.SharedPath
+                Environment.setEnvironVar "RUN_IN" "mirrord"
+
+                [
+                    "server",
+                    createProcess
+                        "mirrord"
+                        [
+                            "exec"
+                            "--config-file"
+                            "../../.mirrord/mirrord.json"
+                            "--"
+                            "dotnet"
+                            "watch"
+                            "run"
+                        ]
+                        safe.ServerPath
+                    "client", dotnet [ "fable"; "watch"; "-o"; "output"; "-s"; "--run"; "npx"; "vite" ] safe.ClientPath
+                ]
+                |> runParallel)
+
             Target.create "WatchTests" (fun _ ->
                 run dotnet [ "build" ] safe.SharedTestsPath
 
@@ -74,9 +96,11 @@ module internal Targets =
 
                 "Tests" ==> "Bundle"
 
-                "Build" ==> "Lint" ==> "Tests" <=> "WatchTests"
+                "Build" ==> "Lint" ==> "Codestyle" ==> "Analyze"
 
-                "Build" ==> "Run"
+                "Build" ==> "Analyze" ==> "Tests" <=> "WatchTests"
+
+                "Build" ==> "Run" <=> "RunMirrord"
             ]
 
     let init (definition: ProjectDefinition) =
@@ -202,13 +226,30 @@ module internal Targets =
             definition.Sources.All
             |> Seq.iter (Path.getDirectory >> Dotnet.runOrFail "build"))
 
-        Target.create "Lint"
-        <| skipOn "no-lint" (fun _ ->
-            definition.Sources.All ++ "build/build.fsproj"
-            |> Seq.iter (fun fsproj ->
-                match Dotnet.runInRoot (sprintf "fsharplint lint %s" fsproj) with
-                | Ok () -> Trace.tracefn "Lint %s is Ok" fsproj
-                | Error e -> raise e))
+        let skipOnNoAnalyze = skipOn "no-analyze"
+
+        Target.create
+            "Lint"
+            ((fun _ ->
+                definition.Sources.All ++ "build/build.fsproj"
+                |> Seq.iter (fun fsproj ->
+                    match Dotnet.runInRoot (sprintf "fsharplint lint %s" fsproj) with
+                    | Ok () -> Trace.tracefn "Lint %s is Ok" fsproj
+                    | Error e -> raise e))
+             |> skipOn "no-lint"
+             |> skipOnNoAnalyze)
+
+        Target.create
+            "Codestyle"
+            ((fun _ ->
+                match Dotnet.runInRoot "fantomas --check ." with
+                | Ok () -> Trace.trace "Codestyle is Ok"
+                | Error e -> raise e)
+             |> skipOn "no-codestyle"
+             |> skipOnNoAnalyze)
+
+        Target.create "Analyze"
+        <| skipOnNoAnalyze (fun _ -> Trace.trace "Analysis is Ok")
 
         if not definition.Specs.IsSAFEStack then
             Target.create "Tests" (fun _ ->
@@ -375,7 +416,17 @@ module internal Targets =
 
             Target.create "Watch" (fun _ -> Dotnet.runInRootOrFail "watch run")
 
+            Target.create "WatchMirrord" (fun _ ->
+                Environment.setEnvironVar "RUN_IN" "mirrord"
+                run (createProcess "mirrord") "exec --config-file .mirrord/mirrord.json -- dotnet watch run" ".")
+
             Target.create "Run" (fun _ -> Dotnet.runInRootOrFail "run")
+
+            Target.create "RunMirrord" (fun _ ->
+                Environment.setEnvironVar "RUN_IN" "mirrord"
+                run (createProcess "mirrord") "exec --config-file .mirrord/mirrord.json -- dotnet run" ".")
+
+            Target.create "Fix" (fun _ -> Dotnet.runInRootOrFail "fantomas .")
 
         // --------------------------------------------------------------------------------------------------------
         // 3. FAKE targets hierarchy
@@ -386,28 +437,36 @@ module internal Targets =
             "Clean"
             ==> "AssemblyInfo"
             ==> "Build"
-            ==> "Lint"
+            ==> "Analyze"
             ==> "Tests"
             ==> "Release"
             ==> "Publish"
+
+            "Build" ==> "Lint" ==> "Codestyle" ==> "Analyze"
           ]
 
         | { Specs = ConsoleApplication _ } -> [
             "Clean"
             ==> "AssemblyInfo"
             ==> "Build"
-            ==> "Lint"
+            ==> "Analyze"
             ==> "Tests"
             ==> "Release"
             ==> "ZipRelease"
 
-            "Build" ==> "Watch" <=> "Run"
+            "Build" ==> "Lint" ==> "Codestyle" ==> "Analyze"
+
+            "Build" ==> "Watch" <=> "WatchMirrord" <=> "Run" <=> "RunMirrord"
           ]
 
         | { Specs = Executable _ } -> [
-            "Clean" ==> "AssemblyInfo" ==> "Build" ==> "Lint" ==> "Tests" ==> "Release"
+            "Clean" ==> "AssemblyInfo" ==> "Build" ==> "Analyze" ==> "Tests" ==> "Release"
             <=> "Watch"
+            <=> "WatchMirrord"
             <=> "Run"
+            <=> "RunMirrord"
+
+            "Build" ==> "Lint" ==> "Codestyle" ==> "Analyze"
           ]
 
         | { Specs = SAFEStackApplication safe } -> SafeStackTargets.init safe

@@ -117,18 +117,13 @@ Main DTOs exposed by the package:
 - `History.IncidentHistory` for incident history records.
 
 ## Release
-
-1. Increment the version in `src/Alma.Fable.Status.Common/Alma.Fable.Status.Common.fsproj`.
-2. Update `CHANGELOG.md`.
-3. Commit the change and create a version tag.
-4. Push the branch and tag so the publish workflow can release the package.
+1. Increment version in `src/Alma.Fable.Status.Common/Alma.Fable.Status.Common.fsproj`
+2. Update `CHANGELOG.md`
+3. Commit new version and tag it
 
 ## Development
-
 ### Requirements
-
-- .NET SDK
-- Paket (`dotnet tool restore` in this repository restores the required tools)
+- [dotnet core](https://dotnet.microsoft.com/learn/dotnet/hello-world-tutorial)
 
 ### Build
 
@@ -142,8 +137,8 @@ Main DTOs exposed by the package:
 ./build.sh -t tests
 ```
 
-### Lint
+### Analyze
 
 ```bash
-./build.sh -t lint
+./build.sh analyze
 ```

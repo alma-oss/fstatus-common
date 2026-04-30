@@ -81,8 +81,7 @@ type StatusItem =
 
 [<RequireQualifiedAccess>]
 module Status =
-    let add (current: Status) (status: Status) : Status =
-        current + status
+    let add (current: Status) (status: Status) : Status = current + status
 
     let zero =
         Status.Normal {
