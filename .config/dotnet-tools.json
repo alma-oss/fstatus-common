@@ -6,29 +6,25 @@
       "version": "6.1.4",
       "commands": [
         "fake"
-      ],
-      "rollForward": false
+      ]
     },
     "paket": {
       "version": "10.3.1",
       "commands": [
         "paket"
-      ],
-      "rollForward": false
+      ]
     },
     "dotnet-fsharplint": {
       "version": "0.26.10",
       "commands": [
         "dotnet-fsharplint"
-      ],
-      "rollForward": false
+      ]
     },
     "fantomas": {
       "version": "7.0.5",
       "commands": [
         "fantomas"
-      ],
-      "rollForward": false
+      ]
     }
   }
 }
