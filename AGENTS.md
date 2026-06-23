@@ -4,6 +4,10 @@
 
 F# library published as NuGet package `Alma.Status.Common`. It provides shared DTOs and utility functions used by Alma.Status and Alma.Fable.Status libraries so both sides can exchange the same status payloads and helper behavior.
 
+## Agent Skills
+
+This repo ships Agent Skill for the `Alma.Status.Common` library. Compatible agents discover it automatically; see `.agents/skills/fstatus-common/SKILL.md`.
+
 ## Tech Stack
 
 - **Language:** F# (.NET 10)
