@@ -42,6 +42,8 @@ type Tag =
 
 type SystemStatusItem = { Name: string; Status: Status; Tags: Tag list }
 
+type DomainStatusItem = { Name: string; Status: Status; Tags: Tag list }
+
 type ServiceStatusItem = {
     Name: string
     Instance: Instance
@@ -66,18 +68,21 @@ type StatusItem =
     | System of SystemStatusItem
     | Service of ServiceStatusItem
     | DataObject of DataObjectStatusItem
+    | Domain of DomainStatusItem
 
     member this.Name =
         match this with
         | System { Name = name }
         | Service { Name = name }
-        | DataObject { Name = name } -> name
+        | DataObject { Name = name }
+        | Domain { Name = name } -> name
 
     member this.Status: Status =
         match this with
         | System { Status = status }
         | Service { Status = status }
-        | DataObject { Status = status } -> status
+        | DataObject { Status = status }
+        | Domain { Status = status } -> status
 
 [<RequireQualifiedAccess>]
 module Status =
