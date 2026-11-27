@@ -9,3 +9,7 @@ indent_style = space
 fsharp_max_record_width = 60
 fsharp_multiline_bracket_style = stroustrup
 fsharp_space_before_uppercase_invocation = true
+
+[src/Client/*.fs]
+# Feliz style
+fsharp_single_argument_web_mode=true
