@@ -1,0 +1,5 @@
+<Solution>
+  <Folder Name="/src/">
+    <Project Path="src/Alma.Fable.Status.Common/Alma.Fable.Status.Common.fsproj" />
+  </Folder>
+</Solution>
